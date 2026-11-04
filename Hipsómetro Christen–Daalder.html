@@ -1,0 +1,448 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Hipsómetro Christen–Daalder</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Source+Sans+3:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: una columna tipo instrumento de campo — visor (foto + regla virtual) arriba, lectura y cálculo debajo; en escritorio, visor y cálculo en dos columnas */
+:root{
+  --bg:#eef2ec; --surface:#ffffff; --ink:#15231a; --muted:#56675b; --line:#d3dccf;
+  --accent:#0b6b4b; --accent-ink:#ffffff; --ruler:#e8b923; --warn:#9a5b00; --warn-bg:#fff4dc;
+  --f-display:"Barlow Condensed","Arial Narrow",sans-serif;
+  --f-body:"Source Sans 3","Segoe UI",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f1511; --surface:#17201a; --ink:#e4ebe5; --muted:#98a99d; --line:#2a372e;
+  --accent:#4cc192; --accent-ink:#06140d; --ruler:#e8b923; --warn:#f0b54a; --warn-bg:#2c2412; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1511; --surface:#17201a; --ink:#e4ebe5; --muted:#98a99d; --line:#2a372e;
+  --accent:#4cc192; --accent-ink:#06140d; --ruler:#e8b923; --warn:#f0b54a; --warn-bg:#2c2412; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:16px;line-height:1.5;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:16px 40px}
+.wrap{max-width:1180px;margin:0 auto;display:grid;gap:16px}
+header{display:flex;flex-wrap:wrap;align-items:end;justify-content:space-between;gap:8px 16px}
+h1{font-family:var(--f-display);font-weight:700;font-size:clamp(28px,6vw,40px);line-height:1;margin:0;letter-spacing:.01em;text-wrap:balance}
+.sub{color:var(--muted);margin:4px 0 0;font-size:15px}
+.tabs{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:3px;background:var(--surface)}
+.tabs button{font:600 15px var(--f-body);border:0;background:transparent;color:var(--muted);padding:7px 16px;border-radius:999px;cursor:pointer}
+.tabs button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.grid{display:grid;gap:16px;grid-template-columns:minmax(0,1fr)}
+.wrap>*{min-width:0}
+ol.steps,ol.steps li{min-width:0}
+@media (min-width:900px){.grid{grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);align-items:start}}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px;min-width:0}
+.viewer{display:grid;gap:10px}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.btn{font:600 15px var(--f-body);display:inline-flex;align-items:center;gap:6px;padding:9px 14px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--ink);cursor:pointer}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:transparent}
+.btn:focus-visible,.tabs button:focus-visible,.chip:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+input[type=file]{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font:600 14px var(--f-body);display:inline-flex;align-items:center;gap:6px;padding:6px 11px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--ink);cursor:pointer}
+.chip .dot{width:11px;height:11px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px rgba(0,0,0,.35)}
+.chip[aria-pressed="true"]{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+.chip .st{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.stage{position:relative;display:flex;justify-content:center;background:#0c120e;border-radius:8px;overflow:hidden}
+canvas#cv{display:block;max-width:100%;touch-action:none;cursor:crosshair}
+.hint{font-size:14px;color:var(--muted);margin:0}
+.hint b{color:var(--ink)}
+.tag{position:absolute;left:8px;top:8px;font:600 12px var(--f-mono);background:rgba(0,0,0,.6);color:#fff;padding:3px 7px;border-radius:4px;letter-spacing:.04em;text-transform:uppercase}
+.result{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:6px 16px;border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:12px}
+.result .lab{font:600 13px var(--f-body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.result .h{font-family:var(--f-display);font-weight:700;font-size:56px;line-height:1;font-variant-numeric:tabular-nums}
+.result .h small{font-size:26px;font-weight:600;margin-left:4px}
+.result .meta{font-size:14px;color:var(--muted)}
+.warn{background:var(--warn-bg);color:var(--warn);border-radius:8px;padding:10px 12px;font-size:15px;margin:0 0 12px}
+.params{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:14px}
+.params label{display:grid;gap:3px;font-size:13px;color:var(--muted);font-weight:600}
+.params input{font:600 16px var(--f-mono);width:100%;padding:7px 8px;border-radius:6px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+h2{font-family:var(--f-display);font-weight:600;font-size:22px;margin:0 0 8px;letter-spacing:.01em}
+ol.steps{margin:0;padding-left:22px;display:grid;gap:10px}
+ol.steps li{padding-left:2px}
+.f{font-family:var(--f-mono);font-size:14px;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:6px 8px;margin-top:5px;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+.f b{color:var(--accent)}
+.note{font-size:14px;color:var(--muted);border-top:1px solid var(--line);margin-top:14px;padding-top:12px}
+.note p{margin:0 0 8px}
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:8px 0}
+.cmp div{border:1px solid var(--line);border-radius:6px;padding:8px;background:var(--bg)}
+.cmp .v{font:600 20px var(--f-mono);color:var(--ink);font-variant-numeric:tabular-nums}
+details{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+summary{font:600 17px var(--f-body);cursor:pointer}
+details ul{margin:10px 0 0;padding-left:20px;display:grid;gap:6px;max-width:75ch}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Hipsómetro Christen–Daalder</h1>
+      <p class="sub">Altura del árbol a partir de una foto con jalón, mediante semejanza de triángulos</p>
+    </div>
+    <div class="tabs" role="group" aria-label="Método">
+      <button id="tabC" aria-pressed="true">Christen</button>
+      <button id="tabD" aria-pressed="false">Daalder</button>
+    </div>
+  </header>
+
+  <div class="grid">
+    <section class="panel viewer" aria-label="Visor">
+      <div class="toolbar">
+        <label class="btn primary" for="file">📷 Hacer o cargar foto</label>
+        <input id="file" type="file" accept="image/*" capture="environment">
+        <button class="btn" id="sampleBtn" type="button">Ver ejemplo</button>
+      </div>
+      <div class="chips" role="group" aria-label="Marca activa">
+        <button class="chip" id="chipB" data-k="B"><span class="dot" style="background:#2f7de1"></span>Base<span class="st"></span></button>
+        <button class="chip" id="chipJ" data-k="J"><span class="dot" style="background:#e0312f"></span>Cima del jalón<span class="st"></span></button>
+        <button class="chip" id="chipA" data-k="A"><span class="dot" style="background:#f2a20c"></span>Ápice<span class="st"></span></button>
+      </div>
+      <div class="stage" id="stage">
+        <canvas id="cv" aria-label="Foto del árbol con marcas. Toca para colocar la marca activa y arrastra para ajustarla."></canvas>
+        <span class="tag" id="tag">Ejemplo dibujado</span>
+      </div>
+      <p class="hint" id="hint"></p>
+    </section>
+
+    <section class="panel" aria-label="Resultado y cálculo">
+      <div class="result">
+        <div>
+          <div class="lab" id="resLab">Altura total</div>
+          <div class="h" id="resH">–</div>
+        </div>
+        <div class="meta" id="resMeta"></div>
+      </div>
+      <p class="warn" id="warn" hidden></p>
+      <div class="params">
+        <label for="pIn">Jalón p (m)<input id="pIn" type="number" inputmode="decimal" step="0.5" min="0.5" value="4"></label>
+        <label for="mIn">Marca Daalder (m)<input id="mIn" type="number" inputmode="decimal" step="1" min="1" value="10"></label>
+        <label for="rIn">Regla r (cm)<input id="rIn" type="number" inputmode="decimal" step="1" min="5" value="30"></label>
+      </div>
+      <h2 id="stepsTitle">Cálculo paso a paso</h2>
+      <ol class="steps" id="steps"></ol>
+      <div class="note" id="note"></div>
+    </section>
+  </div>
+
+  <details>
+    <summary>Cómo hacer la foto en campo</summary>
+    <ul>
+      <li>Coloca el jalón <b>vertical y pegado al tronco</b>, con su pie a la misma altura que la base del árbol que vas a medir.</li>
+      <li>Aléjate hasta que el árbol entero, de la base al ápice, quepa en la foto con algo de margen. A más distancia, menos error de perspectiva.</li>
+      <li>Sujeta el móvil <b>vertical</b>, sin inclinarlo hacia arriba. Si lo inclinas, el tronco se ve convergente y la altura sale sesgada. Es el mismo requisito que pide la regla física: paralela al eje del árbol.</li>
+      <li>Para el cálculo solo cuentan las posiciones verticales de las marcas. Colócalas sobre el eje del tronco, no hace falta más precisión en horizontal.</li>
+      <li>Al arrastrar una marca aparece una lupa. Afina sobre todo la <b>cima del jalón</b>, porque es la marca que más pesa en el error.</li>
+      <li>En terreno con pendiente, la base es el punto del tronco al nivel del pie del jalón, como en el método clásico.</li>
+    </ul>
+  </details>
+</div>
+
+<script>
+(() => {
+  const cv = document.getElementById('cv'), ctx = cv.getContext('2d');
+  const stage = document.getElementById('stage');
+  const COLORS = {B:'#2f7de1', J:'#e0312f', A:'#f2a20c', P:'#9b59f0'};
+  const NAMES = {B:'Base', J:'Cima del jalón', A:'Ápice'};
+  const ORDER = ['B','J','A'];
+  const st = {mode:'christen', p:4, M:10, r:30, src:null, W:0, H:0, marks:{}, active:'B', sample:true, drag:null, pointer:null};
+  const fmt = (n, d=1) => Number.isFinite(n) ? n.toLocaleString('es-ES',{minimumFractionDigits:d, maximumFractionDigits:d}) : '–';
+
+  // ---------- Imagen de ejemplo dibujada (árbol de 22 m, jalón de 4 m) ----------
+  function makeSample(){
+    const W=1200, H=1600, c=document.createElement('canvas'); c.width=W; c.height=H;
+    const g=c.getContext('2d');
+    let sky=g.createLinearGradient(0,0,0,H); sky.addColorStop(0,'#bcd6e6'); sky.addColorStop(.75,'#e3ece6'); g.fillStyle=sky; g.fillRect(0,0,W,H);
+    // lomas de fondo
+    g.fillStyle='#9bb59d'; g.beginPath(); g.moveTo(0,1260); g.quadraticCurveTo(300,1150,600,1240); g.quadraticCurveTo(900,1320,1200,1200); g.lineTo(1200,H); g.lineTo(0,H); g.fill();
+    g.fillStyle='#7d9a6a'; g.fillRect(0,1450,W,H-1450);
+    g.fillStyle='#6b8a59'; for(let i=0;i<260;i++){g.fillRect(Math.random()*W,1450+Math.random()*150,2,6+Math.random()*8)}
+    const k=55, baseY=1450, cx=560, topY=baseY-22*k; // 55 px por metro
+    // tronco
+    g.fillStyle='#6b4a2f'; g.beginPath(); g.moveTo(cx-26,baseY); g.lineTo(cx-9,topY+120); g.lineTo(cx+9,topY+120); g.lineTo(cx+26,baseY); g.fill();
+    // copa (pino piñonero estilizado no; conífera alargada)
+    const tiers=9;
+    for(let i=0;i<tiers;i++){
+      const t=i/(tiers-1), yTop=topY+t*(baseY-topY-430)*0.98, w=60+t*240, hh=150+t*40;
+      g.fillStyle = i%2? '#2f5a35':'#376640';
+      g.beginPath(); g.moveTo(cx, yTop); g.lineTo(cx-w, yTop+hh); g.quadraticCurveTo(cx, yTop+hh-30, cx+w, yTop+hh); g.closePath(); g.fill();
+    }
+    g.fillStyle='#2a5230'; g.beginPath(); g.moveTo(cx,topY); g.lineTo(cx-40,topY+110); g.lineTo(cx+40,topY+110); g.fill();
+    // jalón de 4 m, bandas de 0,5 m
+    const px=cx+34, pw=14;
+    for(let i=0;i<8;i++){ g.fillStyle = i%2? '#ffffff':'#d0241f'; g.fillRect(px, baseY-(i+1)*0.5*k, pw, 0.5*k); }
+    g.strokeStyle='rgba(0,0,0,.35)'; g.lineWidth=1; g.strokeRect(px, baseY-4*k, pw, 4*k);
+    // sombra en el suelo
+    g.fillStyle='rgba(0,0,0,.18)'; g.beginPath(); g.ellipse(cx+20, baseY+6, 120, 12, 0, 0, Math.PI*2); g.fill();
+    return {canvas:c, marks:{B:{x:cx,y:baseY}, J:{x:px+pw/2,y:baseY-4*k}, A:{x:cx,y:topY}}};
+  }
+
+  function loadSample(){
+    const s=makeSample(); st.src=s.canvas; st.W=1200; st.H=1600; st.marks=s.marks; st.sample=true; st.active='B';
+    document.getElementById('tag').hidden=false; layout(); update();
+  }
+
+  // ---------- Carga de foto ----------
+  document.getElementById('file').addEventListener('change', e => {
+    const f=e.target.files && e.target.files[0]; if(!f) return;
+    const url=URL.createObjectURL(f), img=new Image();
+    img.onload=()=>{
+      const max=2200, sc=Math.min(1, max/Math.max(img.naturalWidth,img.naturalHeight));
+      const c=document.createElement('canvas'); c.width=Math.round(img.naturalWidth*sc); c.height=Math.round(img.naturalHeight*sc);
+      c.getContext('2d').drawImage(img,0,0,c.width,c.height); URL.revokeObjectURL(url);
+      st.src=c; st.W=c.width; st.H=c.height; st.marks={}; st.sample=false; st.active='B';
+      document.getElementById('tag').hidden=true; layout(); update();
+    };
+    img.onerror=()=>{ URL.revokeObjectURL(url); showHint('No se ha podido abrir la imagen. Prueba con una foto JPG o PNG.'); };
+    img.src=url; e.target.value='';
+  });
+  document.getElementById('sampleBtn').addEventListener('click', loadSample);
+
+  // ---------- Geometría de pantalla ----------
+  let s=1, dpr=1;
+  function layout(){
+    if(!st.src) return;
+    const availW=stage.clientWidth, availH=Math.max(320, window.innerHeight*0.66);
+    s=Math.min(availW/st.W, availH/st.H);
+    const cw=Math.round(st.W*s), ch=Math.round(st.H*s);
+    dpr=Math.min(window.devicePixelRatio||1, 2.5);
+    cv.style.width=cw+'px'; cv.style.height=ch+'px'; cv.width=Math.round(cw*dpr); cv.height=Math.round(ch*dpr);
+    draw();
+  }
+  window.addEventListener('resize', layout);
+  const toImg = e => { const r=cv.getBoundingClientRect(); return {x:(e.clientX-r.left)/s, y:(e.clientY-r.top)/s}; };
+
+  // ---------- Cálculo ----------
+  function compute(){
+    const {B,J,A}=st.marks, p=st.p, M=st.M, r=st.r;
+    const out={ok:false};
+    if(!B||!J||!A){ out.msg='missing'; return out; }
+    const L=B.y-A.y, l=B.y-J.y;
+    if(!(L>0 && l>0 && J.y>A.y)){ out.msg='Las marcas deben quedar en este orden de arriba abajo: ápice, cima del jalón y base.'; return out; }
+    const h=p*L/l, xJ=r*(J.y-A.y)/L;
+    Object.assign(out,{ok:true,L,l,h,xJ, perPx: h/l});
+    const yP=B.y-(M/p)*l; out.yP=yP; out.xP=r*(yP-A.y)/L;
+    out.dOk = h>M;
+    out.spC = r*p/(h*h)*10;  // mm de regla por metro de altura
+    out.spD = r*M/(h*h)*10;
+    return out;
+  }
+
+  // ---------- Dibujo ----------
+  function draw(){
+    if(!st.src) return;
+    ctx.setTransform(dpr*s,0,0,dpr*s,0,0);
+    ctx.clearRect(0,0,st.W,st.H);
+    ctx.drawImage(st.src,0,0,st.W,st.H);
+    const u=1/s; // 1 px CSS en coordenadas de imagen
+    const res=compute();
+    if(res.ok) drawRuler(res,u);
+    ['B','J','A'].forEach(k=>{ if(st.marks[k]) drawMark(st.marks[k], COLORS[k], NAMES[k], u, k===st.active); });
+    if(res.ok && st.mode==='daalder' && res.dOk){
+      const P={x:st.marks.B.x, y:res.yP};
+      drawMark(P, COLORS.P, 'P = '+fmt(st.M,0)+' m', u, false, true);
+    }
+    if(st.pointer && st.drag) drawLoupe(st.pointer,u);
+  }
+
+  function drawMark(m,col,label,u,active,dashed){
+    ctx.save();
+    ctx.lineWidth=(active?3:2)*u; ctx.strokeStyle='rgba(0,0,0,.55)';
+    const half=46*u;
+    ctx.beginPath(); ctx.moveTo(m.x-half,m.y); ctx.lineTo(m.x+half,m.y); ctx.stroke();
+    ctx.strokeStyle=col; ctx.lineWidth=(active?2:1.4)*u; if(dashed) ctx.setLineDash([6*u,4*u]);
+    ctx.beginPath(); ctx.moveTo(m.x-half,m.y); ctx.lineTo(m.x+half,m.y); ctx.stroke(); ctx.setLineDash([]);
+    ctx.beginPath(); ctx.arc(m.x,m.y,(active?9:7)*u,0,Math.PI*2); ctx.fillStyle=col; ctx.fill();
+    ctx.lineWidth=2*u; ctx.strokeStyle='#fff'; ctx.stroke();
+    ctx.font=`600 ${13*u}px "Source Sans 3",system-ui,sans-serif`;
+    const tw=ctx.measureText(label).width, lx=m.x-half-tw-14*u, bx=Math.max(4*u, lx);
+    ctx.fillStyle='rgba(0,0,0,.66)'; ctx.fillRect(bx-5*u, m.y-10*u, tw+10*u, 20*u);
+    ctx.fillStyle='#fff'; ctx.textBaseline='middle'; ctx.fillText(label, bx, m.y);
+    ctx.restore();
+  }
+
+  function scaleTicks(pp, yA, yB){
+    // posiciones de la escala de Christen para un jalón pp: y(h) = yA + (yB−yA)(1 − pp/h)
+    const t=[]; for(let h=Math.ceil(pp); h<=120; h++){ t.push({h, y:yA+(yB-yA)*(1-pp/h)}); } return t;
+  }
+
+  function drawRuler(res,u){
+    const {B,J,A}=st.marks, yA=A.y, yB=B.y;
+    const two = st.mode==='daalder';
+    const rw=(two?64:40)*u;
+    let rx=Math.max(A.x,B.x,J.x)+90*u; if(rx+rw>st.W-6*u) rx=Math.min(A.x,B.x,J.x)-90*u-rw; rx=Math.max(4*u,rx);
+    ctx.save();
+    // cuerpo de la regla (amarillo de regla plegable)
+    ctx.fillStyle='rgba(232,185,35,.93)'; ctx.fillRect(rx,yA,rw,yB-yA);
+    ctx.strokeStyle='rgba(0,0,0,.6)'; ctx.lineWidth=1*u; ctx.strokeRect(rx,yA,rw,yB-yA);
+    // líneas de visual a los extremos
+    ctx.setLineDash([5*u,5*u]); ctx.strokeStyle='rgba(255,255,255,.85)'; ctx.lineWidth=1.2*u;
+    [[A.x,yA],[B.x,yB]].forEach(([x,y])=>{ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(rx,y); ctx.stroke();});
+    ctx.setLineDash([]);
+    const fs=11*u; ctx.font=`600 ${fs}px "JetBrains Mono",monospace`; ctx.textBaseline='middle';
+    const drawScale=(pp, side)=>{
+      const ticks=scaleTicks(pp,yA,yB); let lastLab=-1e9, lastT=-1e9;
+      ctx.fillStyle='#1a1405'; ctx.strokeStyle='#1a1405';
+      ticks.forEach(t=>{
+        if(t.y-lastT < 2.5*u) return; lastT=t.y;
+        const major = t.h%5===0 || t.h===Math.ceil(pp);
+        const len=(major?12:6)*u, x0 = side==='L'? rx : rx+rw;
+        ctx.lineWidth=(major?1.4:0.9)*u; ctx.beginPath(); ctx.moveTo(x0,t.y); ctx.lineTo(side==='L'? x0+len : x0-len, t.y); ctx.stroke();
+        const need = 13*u;
+        if(t.y-lastLab >= need && (major || t.y-lastLab >= need*1.6)){
+          ctx.textAlign = side==='L'?'left':'right';
+          ctx.fillText(String(t.h), side==='L'? x0+len+2*u : x0-len-2*u, t.y); lastLab=t.y;
+        }
+      });
+    };
+    drawScale(st.p,'L');
+    if(two) drawScale(st.M,'R');
+    // encabezados de escala
+    ctx.font=`700 ${10*u}px "JetBrains Mono",monospace`; ctx.textBaseline='bottom'; ctx.fillStyle='#fff';
+    ctx.textAlign='left'; ctx.fillText(fmt(st.p, st.p%1?1:0)+' m', rx, yA-4*u);
+    if(two){ ctx.textAlign='right'; ctx.fillText(fmt(st.M, st.M%1?1:0)+' m', rx+rw, yA-4*u); }
+    // visual de lectura
+    const sight=(m,y,col,toRight)=>{
+      ctx.setLineDash([7*u,4*u]); ctx.strokeStyle=col; ctx.lineWidth=1.8*u;
+      ctx.beginPath(); ctx.moveTo(m.x,y); ctx.lineTo(toRight? rx+rw+10*u : rx-10*u, y); ctx.stroke(); ctx.setLineDash([]);
+      ctx.beginPath(); ctx.moveTo(rx-1*u,y); ctx.lineTo(rx+rw+1*u,y); ctx.lineWidth=2.4*u; ctx.stroke();
+    };
+    if(!two) sight(J,J.y,COLORS.J,true);
+    else { sight(J,J.y,COLORS.J,false); if(res.dOk) sight({x:B.x},res.yP,COLORS.P,true); }
+    ctx.restore();
+  }
+
+  function drawLoupe(pt,u){
+    const R=62*u, Z=3;
+    const cxL = pt.x < st.W/2 ? st.W - R - 10*u : R + 10*u, cyL = R + 10*u;
+    ctx.save();
+    ctx.beginPath(); ctx.arc(cxL,cyL,R,0,Math.PI*2); ctx.clip();
+    ctx.fillStyle='#000'; ctx.fillRect(cxL-R,cyL-R,2*R,2*R);
+    const sw=2*R/Z;
+    ctx.drawImage(st.src, pt.x-sw/2, pt.y-sw/2, sw, sw, cxL-R, cyL-R, 2*R, 2*R);
+    ctx.strokeStyle=COLORS[st.drag]||'#fff'; ctx.lineWidth=1.5*u;
+    ctx.beginPath(); ctx.moveTo(cxL-R,cyL); ctx.lineTo(cxL+R,cyL); ctx.moveTo(cxL,cyL-R*0.35); ctx.lineTo(cxL,cyL+R*0.35); ctx.stroke();
+    ctx.restore();
+    ctx.beginPath(); ctx.arc(cxL,cyL,R,0,Math.PI*2); ctx.lineWidth=3*u; ctx.strokeStyle='#fff'; ctx.stroke();
+  }
+
+  // ---------- Interacción ----------
+  cv.addEventListener('pointerdown', e=>{
+    if(!st.src) return;
+    const pt=toImg(e), tol=30/s;
+    let hit=null, best=1e9;
+    ORDER.forEach(k=>{ const m=st.marks[k]; if(!m) return; const d=Math.hypot((m.x-pt.x)*0.35, m.y-pt.y); if(d<tol && d<best){best=d; hit=k;} });
+    if(!hit){ hit=st.active; st.marks[hit]={x:pt.x,y:pt.y}; }
+    st.active=hit; st.drag=hit; st.pointer=pt; cv.setPointerCapture(e.pointerId);
+    update();
+  });
+  cv.addEventListener('pointermove', e=>{
+    if(!st.drag) return;
+    const pt=toImg(e); pt.x=Math.max(0,Math.min(st.W,pt.x)); pt.y=Math.max(0,Math.min(st.H,pt.y));
+    st.marks[st.drag]={x:pt.x,y:pt.y}; st.pointer=pt; update();
+  });
+  const end=()=>{
+    if(!st.drag) return;
+    const placed=st.drag; st.drag=null; st.pointer=null;
+    const next=ORDER.find(k=>!st.marks[k]); if(next && placed===st.active) st.active=next;
+    update();
+  };
+  cv.addEventListener('pointerup', end); cv.addEventListener('pointercancel', end);
+  // teclado: flechas mueven la marca activa
+  cv.tabIndex=0;
+  cv.addEventListener('keydown', e=>{
+    const m=st.marks[st.active]; if(!m) return;
+    const step=(e.shiftKey?10:1)/s;
+    if(e.key==='ArrowUp'){m.y-=step;} else if(e.key==='ArrowDown'){m.y+=step;} else if(e.key==='ArrowLeft'){m.x-=step;} else if(e.key==='ArrowRight'){m.x+=step;} else return;
+    e.preventDefault(); update();
+  });
+  ORDER.forEach(k=>document.getElementById('chip'+k).addEventListener('click',()=>{st.active=k; update();}));
+
+  const setMode=m=>{ st.mode=m; document.getElementById('tabC').setAttribute('aria-pressed', m==='christen'); document.getElementById('tabD').setAttribute('aria-pressed', m==='daalder'); update(); };
+  document.getElementById('tabC').addEventListener('click',()=>setMode('christen'));
+  document.getElementById('tabD').addEventListener('click',()=>setMode('daalder'));
+  [['pIn','p'],['mIn','M'],['rIn','r']].forEach(([id,key])=>{
+    document.getElementById(id).addEventListener('input',e=>{ const v=parseFloat(String(e.target.value).replace(',','.')); if(v>0){ st[key]=v; update(); } });
+  });
+
+  function showHint(t){ document.getElementById('hint').innerHTML=t; }
+
+  // ---------- Panel de cálculo ----------
+  function update(){
+    draw();
+    ORDER.forEach(k=>{
+      const c=document.getElementById('chip'+k); c.setAttribute('aria-pressed', st.active===k);
+      c.querySelector('.st').textContent = st.marks[k]? '✓' : '';
+    });
+    const res=compute(), p=st.p, M=st.M, r=st.r, D=st.mode==='daalder';
+    const warn=document.getElementById('warn'), steps=document.getElementById('steps'), note=document.getElementById('note');
+    const H=document.getElementById('resH'), meta=document.getElementById('resMeta');
+    warn.hidden=true;
+    const missing=ORDER.filter(k=>!st.marks[k]);
+    if(missing.length){
+      showHint(`Toca en la foto para colocar: <b>${NAMES[st.active]}</b>. Después, arrastra cada marca para afinarla.`);
+    } else {
+      showHint(st.sample ? 'Ejemplo: árbol de 22 m dibujado con un jalón de 4 m. Arrastra las marcas para ver cómo cambia la lectura, o haz tu propia foto.' :
+        'Arrastra las marcas para afinarlas. Con la lupa, ajusta bien la <b>cima del jalón</b>.');
+    }
+    document.getElementById('resLab').textContent = D ? 'Altura total · Daalder' : 'Altura total · Christen';
+    if(!res.ok){
+      H.innerHTML='–'; meta.textContent='';
+      if(res.msg!=='missing'){ warn.textContent=res.msg; warn.hidden=false; }
+      steps.innerHTML = D ? stepsDaalder(null) : stepsChristen(null); note.innerHTML = noteHtml(null); return;
+    }
+    if(D && !res.dOk){ warn.textContent=`El árbol mide menos que la marca de ${fmt(M,0)} m. La escala de Daalder no se puede aplicar; usa Christen directamente.`; warn.hidden=false; }
+    H.innerHTML = `${fmt(res.h)}<small>m</small>`;
+    meta.innerHTML = `±1 px en la cima del jalón ≈ ±${fmt(res.perPx*100,0)} cm`;
+    steps.innerHTML = D ? stepsDaalder(res) : stepsChristen(res);
+    note.innerHTML = noteHtml(res);
+  }
+
+  const n1=(v)=>fmt(v,1), n2=(v)=>fmt(v,2), n0=(v)=>fmt(v,0), np=(v)=>fmt(v, Number.isInteger(v)?0:1);
+
+  function stepsChristen(R){
+    const p=st.p, r=st.r;
+    const y = R ? st.marks : null;
+    return `
+      <li>Jalón de <b>${np(p)} m</b> vertical, pegado al tronco. La regla mide <b>r = ${n0(r)} cm</b>.</li>
+      <li>Se alinean los extremos de la regla con la <b>base</b> y el <b>ápice</b>. En la foto, son las marcas azul y naranja: la regla virtual queda encajada entre ellas.
+        ${R?`<div class="f">y<sub>ápice</sub> = ${n0(y.A.y)} px · y<sub>base</sub> = ${n0(y.B.y)} px</div>`:''}</li>
+      <li>Se mira la cima del jalón y se lee dónde corta la regla, contando desde el extremo superior.
+        ${R?`<div class="f">x = r·(y<sub>jalón</sub> − y<sub>ápice</sub>)/(y<sub>base</sub> − y<sub>ápice</sub>) = ${n0(r)}·(${n0(y.J.y)} − ${n0(y.A.y)})/(${n0(y.B.y)} − ${n0(y.A.y)}) = <b>${n2(R.xJ)} cm</b></div>`:''}</li>
+      <li>Por semejanza de triángulos:
+        <div class="f">h = p·r/(r − x)${R?` = ${np(p)}·${n0(r)}/(${n0(r)} − ${n2(R.xJ)}) = <b>${n1(R.h)} m</b>`:''}</div></li>`;
+  }
+
+  function stepsDaalder(R){
+    const p=st.p, r=st.r, M=st.M, y=R?st.marks:null, ok=R&&R.dOk;
+    return `
+      <li>Regla con dos escalas: una para el jalón real de <b>${np(p)} m</b> y otra para una marca de <b>${n0(M)} m</b>. La regla mide <b>r = ${n0(r)} cm</b>.</li>
+      <li><b>Localizar P a ${n0(M)} m en el tronco.</b> Con la escala de ${np(p)} m, el extremo inferior de la regla se alinea con la base y la división «${n0(M)}» con la cima del jalón; el extremo superior señala entonces P. En la app, P se calcula:
+        ${R?`<div class="f">y<sub>P</sub> = y<sub>base</sub> − (${n0(M)}/${np(p)})·(y<sub>base</sub> − y<sub>jalón</sub>) = ${n0(y.B.y)} − ${n2(M/p)}·${n0(R.l)} = <b>${n0(R.yP)} px</b></div>`:''}</li>
+      <li>La regla se alinea con la <b>base</b> y el <b>ápice</b>. Se usa ahora la escala de ${n0(M)} m, tomando P como cima de un jalón ficticio de ${n0(M)} m.
+        ${ok?`<div class="f">x' = r·(y<sub>P</sub> − y<sub>ápice</sub>)/(y<sub>base</sub> − y<sub>ápice</sub>) = ${n0(r)}·(${n0(R.yP)} − ${n0(y.A.y)})/${n0(R.L)} = <b>${n2(R.xP)} cm</b></div>`:''}</li>
+      <li>Lectura de la altura en la escala de ${n0(M)} m:
+        <div class="f">h = M·r/(r − x')${ok?` = ${n0(M)}·${n0(r)}/(${n0(r)} − ${n2(R.xP)}) = <b>${n1(R.h)} m</b>`:''}</div></li>`;
+  }
+
+  function noteHtml(R){
+    const p=st.p, M=st.M, r=st.r;
+    const hRef = R? R.h : 25;
+    const spC=r*p/(hRef*hRef)*10, spD=r*M/(hRef*hRef)*10;
+    const lim = Math.sqrt(r*p*10/1); // altura a la que las divisiones de la escala de Christen quedan a 1 mm por metro
+    return `
+      <p><b>Por qué Daalder mejora a Christen en árboles altos.</b> En la regla de Christen, las divisiones se juntan hacia la base. A ${n1(hRef)} m de altura, la separación entre metros es:</p>
+      <div class="cmp">
+        <div>Escala de ${np(p)} m<div class="v">${n1(spC)} mm/m</div></div>
+        <div>Escala de ${n0(M)} m<div class="v">${n1(spD)} mm/m</div></div>
+      </div>
+      <p>La escala de ${n0(M)} m es ${n1(M/p)} veces más fácil de leer. Con r = ${n0(r)} cm y jalón de ${np(p)} m, las divisiones de Christen bajan de 1 mm por metro a partir de unos ${n0(lim)} m.</p>
+      <p>En la app, Christen y Daalder dan el mismo resultado, porque la foto se mide con un cálculo exacto y no con la vista. La ventaja de Daalder está en leer una regla física. La precisión de la app depende de lo bien que se marque la cima del jalón: con un jalón pequeño en la foto, cada píxel de error pesa más.</p>`;
+  }
+
+  loadSample();
+  requestAnimationFrame(layout);
+})();
+</script>
+
+</body></html>
